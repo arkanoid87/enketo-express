@@ -49,7 +49,7 @@ function getSurveyParts( req, res, next ) {
     _getSurveyParams( req )
         .then( function( survey ) {
             if ( survey.info ) {
-                // A preview request with "xformUrl" body parameter was used
+                // A request with "xformUrl" body parameter was used (unlaunched form)
                 _getFormDirectly( survey )
                     .then( function( survey ) {
                         _respond( res, survey );
@@ -59,11 +59,7 @@ function getSurveyParts( req, res, next ) {
                 _authenticate( survey )
                     .then( _getFormFromCache )
                     .then( function( result ) {
-                        if ( result && survey.noHashes ) {
-                            //console.log( 'asynchronously updating cache' );
-                            return _updateCache( result );
-                            //return result;
-                        } else if ( result ) {
+                        if ( result ) {
                             return _updateCache( result );
                         } else {
                             return _updateCache( survey );
@@ -180,7 +176,7 @@ function _replaceMediaSources( survey ) {
     const media = _getMediaMap( survey.manifest );
 
     if ( media ) {
-        survey.form = survey.form.replace( /"jr:\/\/[\w-]+\/([^"]+)"/g, ( match, filename ) => media[ filename ] || match );
+        survey.form = survey.form.replace( /"jr:\/\/[\w-]+\/([^"]+)"/g, ( match, filename ) => `"${media[ filename ] || match}"` );
         if ( media[ 'form_logo.png' ] ) {
             survey.form = survey.form.replace( /(class=\"form-logo\"\s*>)/, `$1<img src="${media['form_logo.png']}" alt="form logo">` );
         }
@@ -255,7 +251,6 @@ function _getSurveyParams( req ) {
     var urlObj;
     var domain;
     var params = req.body;
-    var noHashes = ( params.noHashes === 'true' );
     var customParamName = req.app.get( 'query parameter to pass to submission' );
     var customParam = customParamName ? req.query[ customParamName ] : null;
 
@@ -264,7 +259,6 @@ function _getSurveyParams( req ) {
             .then( account.check )
             .then( _checkQuota )
             .then( function( survey ) {
-                survey.noHashes = noHashes;
                 survey.customParam = customParam;
                 return _setCookieAndCredentials( survey, req );
             } );
@@ -275,7 +269,6 @@ function _getSurveyParams( req ) {
             } )
             .then( _checkQuota )
             .then( function( survey ) {
-                survey.noHashes = noHashes;
                 survey.customParam = customParam;
                 return _setCookieAndCredentials( survey, req );
             } );
@@ -302,7 +295,6 @@ function _getSurveyParams( req ) {
                 } );
             } )
             .then( function( survey ) {
-                survey.noHashes = noHashes;
                 return _setCookieAndCredentials( survey, req );
             } );
     } else {

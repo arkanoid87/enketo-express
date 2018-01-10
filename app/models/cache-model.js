@@ -74,13 +74,14 @@ function getSurveyHashes( survey ) {
             key = _getKey( survey );
 
             client.hmget( key, [ 'formHash', 'xslHash' ], function( error, hashArr ) {
+                console.log( 'hashArr', key, hashArr );
                 if ( error ) {
                     reject( error );
-                } else if ( !hashArr || !hashArr[ 0 ] || !hashArr[ 2 ] ) {
+                } else if ( !hashArr || !hashArr[ 0 ] || !hashArr[ 1 ] ) {
                     resolve( survey );
                 } else {
                     survey.formHash = hashArr[ 0 ];
-                    survey.xslHash = hashArr[ 2 ];
+                    survey.xslHash = hashArr[ 1 ];
                     resolve( survey );
                 }
             } );
