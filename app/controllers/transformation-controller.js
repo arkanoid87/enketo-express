@@ -46,11 +46,10 @@ router
  * @return {[type]}        [description]
  */
 function getSurveyParts( req, res, next ) {
-    var surveyBare;
-
     _getSurveyParams( req )
         .then( function( survey ) {
             if ( survey.info ) {
+                // A preview request with "xformUrl" body parameter was used
                 _getFormDirectly( survey )
                     .then( function( survey ) {
                         _respond( res, survey );
@@ -61,8 +60,9 @@ function getSurveyParts( req, res, next ) {
                     .then( _getFormFromCache )
                     .then( function( result ) {
                         if ( result && survey.noHashes ) {
-                            _updateCache( result );
-                            return result;
+                            //console.log( 'asynchronously updating cache' );
+                            return _updateCache( result );
+                            //return result;
                         } else if ( result ) {
                             return _updateCache( result );
                         } else {
@@ -105,7 +105,6 @@ function getSurveyHash( req, res, next ) {
 
 function _getFormDirectly( survey ) {
     return communicator.getXForm( survey )
-        .then( _addMediaMap )
         .then( transformer.transform );
 }
 
@@ -140,7 +139,7 @@ function _updateCache( survey ) {
             }
             return survey;
         } )
-        .then( _addMediaHashes )
+        .then( _addMediaHash )
         .catch( function( error ) {
             if ( error.status === 401 || error.status === 404 ) {
                 cacheModel.flush( survey );
@@ -152,7 +151,7 @@ function _updateCache( survey ) {
         } );
 }
 
-function _addMediaHashes( survey ) {
+function _addMediaHash( survey ) {
     survey.mediaHash = utils.getXformsManifestHash( survey.manifest, 'all' );
     return Promise.resolve( survey );
 }
@@ -162,21 +161,32 @@ function _addMediaHashes( survey ) {
  * 
  * @param {[type]} survey [description]
  */
-function _addMediaMap( survey ) {
-    var mediaMap = null;
+function _getMediaMap( manifest ) {
+    let mediaMap = null;
 
-    return new Promise( function( resolve ) {
-        if ( isArray( survey.manifest ) ) {
-            survey.manifest.forEach( function( file ) {
-                mediaMap = mediaMap ? mediaMap : {};
-                if ( file.downloadUrl ) {
-                    mediaMap[ file.filename ] = _toLocalMediaUrl( file.downloadUrl );
-                }
-            } );
+    if ( isArray( manifest ) ) {
+        manifest.forEach( function( file ) {
+            mediaMap = mediaMap ? mediaMap : {};
+            if ( file.downloadUrl ) {
+                mediaMap[ file.filename ] = _toLocalMediaUrl( file.downloadUrl );
+            }
+        } );
+    }
+
+    return mediaMap;
+}
+
+function _replaceMediaSources( survey ) {
+    const media = _getMediaMap( survey.manifest );
+
+    if ( media ) {
+        survey.form = survey.form.replace( /"jr:\/\/[\w-]+\/([^"]+)"/g, ( match, filename ) => media[ filename ] || match );
+        if ( media[ 'form_logo.png' ] ) {
+            survey.form = survey.form.replace( /(class=\"form-logo\"\s*>)/, `$1<img src="${media['form_logo.png']}" alt="form logo">` );
         }
-        survey.media = mediaMap;
-        resolve( survey );
-    } );
+    }
+
+    return survey;
 }
 
 /**
@@ -207,6 +217,8 @@ function _checkQuota( survey ) {
 
 function _respond( res, survey ) {
     delete survey.credentials;
+
+    _replaceMediaSources( survey );
 
     res.status( 200 );
     res.send( {

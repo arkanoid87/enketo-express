@@ -165,6 +165,9 @@ function setSurvey( survey ) {
                 xslHash: survey.xslHash,
                 form: survey.form,
                 model: survey.model,
+                // The mediaUrlHash property is an artefact and no longer used.
+                // When hmset updates the database it would keep it in place, so we explicitly set it to empty.s
+                mediaUrlHash: '',
                 languageMap: JSON.stringify( survey.languageMap || {} )
             };
 
