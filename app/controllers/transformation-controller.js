@@ -174,7 +174,12 @@ function _replaceMediaSources( survey ) {
 
     if ( media ) {
         const JR_URL = /"jr:\/\/[\w-]+\/([^"]+)"/g;
-        const replacer = ( match, filename ) => `"${ ( media[ filename ] ? media[ filename ].replace('&', '&amp;') : match ) }"`;
+        const replacer = ( match, filename ) => {
+            if ( media[ filename ] ) {
+                return `"${media[ filename ].replace('&', '&amp;')}"`;
+            }
+            return match;
+        };
 
         survey.form = survey.form.replace( JR_URL, replacer );
         survey.model = survey.model.replace( JR_URL, replacer );
