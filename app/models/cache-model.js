@@ -131,7 +131,7 @@ function isCacheUpToDate( survey ) {
                     // This allows the same cache to be used for a form for the OpenRosa server serves different media content,
                     // e.g. based on the user credentials.
                     _addHashes( survey );
-                    if ( cacheObj.formHash !== survey.formHash || cacheObj.xslHash !== survey.xslHash ) {
+                    if ( cacheObj.formHash !== survey.formHash || cacheObj.xslHash !== survey.xslHash || cacheObj.mediaUrlHash ) {
                         debug( 'cache is obsolete' );
                         resolve( false );
                     } else {
