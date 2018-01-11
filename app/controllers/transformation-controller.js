@@ -1,6 +1,5 @@
 'use strict';
 
-var Promise = require( 'lie' );
 var transformer = require( 'enketo-transformer' );
 var communicator = require( '../lib/communicator' );
 var surveyModel = require( '../models/survey-model' );
@@ -9,7 +8,6 @@ var account = require( '../models/account-model' );
 var user = require( '../models/user-model' );
 var utils = require( '../lib/utils' );
 var routerUtils = require( '../lib/router-utils' );
-var keys = require( '../lib/router-utils' ).idEncryptionKeys;
 var isArray = require( 'lodash/isArray' );
 var express = require( 'express' );
 var url = require( 'url' );
@@ -129,7 +127,6 @@ function _updateCache( survey ) {
                 delete survey.mediaHash;
                 delete survey.mediaUrlHash;
                 delete survey.formHash;
-                delete survey.media;
                 return _getFormDirectly( survey )
                     .then( cacheModel.set );
             }
@@ -176,7 +173,12 @@ function _replaceMediaSources( survey ) {
     const media = _getMediaMap( survey.manifest );
 
     if ( media ) {
-        survey.form = survey.form.replace( /"jr:\/\/[\w-]+\/([^"]+)"/g, ( match, filename ) => `"${media[ filename ] || match}"` );
+        const JR_URL = /"jr:\/\/[\w-]+\/([^"]+)"/g;
+        const replacer = ( match, filename ) => `"${ ( media[ filename ] ? media[ filename ].replace('&', '&amp;') : match ) }"`;
+
+        survey.form = survey.form.replace( JR_URL, replacer );
+        survey.model = survey.model.replace( JR_URL, replacer );
+
         if ( media[ 'form_logo.png' ] ) {
             survey.form = survey.form.replace( /(class=\"form-logo\"\s*>)/, `$1<img src="${media['form_logo.png']}" alt="form logo">` );
         }
