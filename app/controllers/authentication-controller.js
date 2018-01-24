@@ -20,20 +20,19 @@ router
 function login( req, res, next ) {
     var error;
     var authSettings = req.app.get( 'linked form and data server' ).authentication;
-    var externalLoginUrl = authSettings[ 'external login url that sets cookie' ];
-    var authenticationManagedByEnketo = authSettings[ 'managed by enketo' ];
     var returnUrl = req.query.return_url || '';
 
-    if ( !authenticationManagedByEnketo ) {
-        if ( externalLoginUrl ) {
-            // the external login url is expected to:
+
+    if ( authSettings.type.toLowerCase() !== 'basic' ) {
+        if ( authSettings.url ) {
+            // the url is expected to:
             // - authenticate the user, 
-            // - set a session cookie (cross-domain if necessary), 
+            // - set a session cookie (cross-domain if necessary) or add a token, 
             // - and return the user back to Enketo
-            // - enketo will then pass this cookie along when requesting resources, submitting data
-            res.redirect( externalLoginUrl.replace( '{RETURNURL}', returnUrl ) );
+            // - enketo will then pass the cookie or token along when requesting resources, submitting data
+            res.redirect( authSettings.url.replace( '{RETURNURL}', returnUrl ) );
         } else {
-            error = new Error( 'Enketo-express was not configured correctly. Enketo should either manage authentication itself (configuration set to true), or an external login url that sets a cookie should be provided.)' );
+            error = new Error( 'Enketo was not configured correctly. External authentication URL is missing.' );
             error.status = 500;
             next( error );
         }
