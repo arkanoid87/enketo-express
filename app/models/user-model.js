@@ -15,7 +15,7 @@ function getCredentials( req ) {
     } else if ( authType === 'token' ) {
         const paramName = auth[ 'query parameter' ];
         if ( !paramName ) {
-            console.error( 'no query parameter name configured for token authentication ' );
+            throw new Error( 'Enketo configuration error. No query parameter name configured for token authentication.' );
         }
         // Note url.parse is considered a legacy method now, and can be replaced for nodeJS 8+
         const referer = req.headers.referer ? url.parse( req.headers.referer, true ) : null;

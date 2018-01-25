@@ -145,6 +145,11 @@ function getAuthHeader( url, credentials ) {
     };
 
     return new Promise( function( resolve ) {
+        // Don't bother making Head request first if token was provided.
+        if ( credentials.bearer ) {
+            resolve( 'Bearer ' + credentials.bearer );
+        }
+        // Check if Basic or Digest Authorization header is required and return header if so.
         var req = request( options, function( error, response ) {
             if ( !error && response && response.statusCode === 401 && credentials && credentials.user && credentials.pass ) {
                 // Using request's internal library we create an appropiate authorization header.

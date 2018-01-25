@@ -32,7 +32,7 @@ function login( req, res, next ) {
             // - enketo will then pass the cookie or token along when requesting resources, submitting data
             res.redirect( authSettings.url.replace( '{RETURNURL}', returnUrl ) );
         } else {
-            error = new Error( 'Enketo was not configured correctly. External authentication URL is missing.' );
+            error = new Error( 'Enketo configuration error. External authentication URL is missing.' );
             error.status = 500;
             next( error );
         }

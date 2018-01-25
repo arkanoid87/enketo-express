@@ -63,7 +63,10 @@ function submit( req, res, next ) {
             submissionUrl = communicator.getSubmissionUrl( survey.openRosaServer ) + query;
             credentials = userModel.getCredentials( req );
 
-            // first check if authentication is required and if so get the Basic or Digest Authorization header
+            if ( credentials.bearer ) {
+                // return 'Bearer ' + credentials.bearer;
+            }
+            // first check if Digest/Basic authentication is required and if so get the Basic or Digest Authorization header
             return communicator.getAuthHeader( submissionUrl, credentials );
         } )
         .then( function( authHeader ) {
