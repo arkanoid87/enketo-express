@@ -194,7 +194,7 @@ function getUpdatedRequestOptions( options ) {
     // set Authorization header
     if ( !options.auth ) {
         delete options.auth;
-    } else {
+    } else if ( !options.auth.bearer ) {
         // check first is DIGEST or BASIC is required
         options.auth.sendImmediately = false;
     }
