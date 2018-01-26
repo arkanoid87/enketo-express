@@ -38,7 +38,7 @@ This is the default authentication that lets Enketo collect credentials from the
 
 ##### External cookie authentication
 
-This allows a deeper integration for a custom server. It configures a (required) `url` on your form/data server where Enketo should redirect a user to when the server returns a 401 response. That url should set a cookie that Enketo will pass to the server whenever it needs to retrieve a form resource or submit data. The url should contain a {RETURNURL} portion which Enketo will populate to send the user back to the webform once authentication has completed. See [README](../README.md#authentication) for more details.
+This allows a deeper integration for a custom server. It configures a (required) `url` on your form/data server where Enketo should redirect a user to when the server returns a 401 response. That url should set a cookie that Enketo will pass to the server whenever it needs to retrieve a form resource or submit data. The url should contain a {RETURNURL} portion which Enketo will populate to send the user back to the webform once authentication has completed.
 
 This mechanism requires any enketo-express webform to have access to these browser cookies so the form/data server and Enketo Express would have to be on the same domain (a different subdomain is possible when setting cross-domain cookies).
 
@@ -52,7 +52,7 @@ This mechanism requires any enketo-express webform to have access to these brows
 
 ##### External token authentication
 
-This allows a deeper integration for a custom server. It configures a (required) `url` on your form/data server where Enketo should redirect a user to when the server returns a 401 response. It also configures a (required) `query parameer` name that is used to share the token. The token value will be passed via `Authorization: Bearer` Header to any requests to the server.
+This allows a deeper integration for a custom server. It configures a (required) `url` on your form/data server where Enketo should redirect a user to when the server returns a 401 response. It also configures a (required) `query parameter` name that is used to share the token. The token value will be passed _unchanged_ via `Authorization: Bearer` Header to any requests to the server.
 
 **At the moment this only works for online-only forms.**
 

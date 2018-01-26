@@ -22,7 +22,6 @@ function login( req, res, next ) {
     var authSettings = req.app.get( 'linked form and data server' ).authentication;
     var returnUrl = req.query.return_url || '';
 
-
     if ( authSettings.type.toLowerCase() !== 'basic' ) {
         if ( authSettings.url ) {
             // the url is expected to:
@@ -30,7 +29,8 @@ function login( req, res, next ) {
             // - set a session cookie (cross-domain if necessary) or add a token, 
             // - and return the user back to Enketo
             // - enketo will then pass the cookie or token along when requesting resources, submitting data
-            res.redirect( authSettings.url.replace( '{RETURNURL}', returnUrl ) );
+            // Though returnUrl was encode with encodeURIComponent, for some reason it appears to be decoded here.
+            res.redirect( authSettings.url.replace( '{RETURNURL}', encodeURIComponent( returnUrl ) ) );
         } else {
             error = new Error( 'Enketo configuration error. External authentication URL is missing.' );
             error.status = 500;
